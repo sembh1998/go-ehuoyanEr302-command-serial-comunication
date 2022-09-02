@@ -177,129 +177,59 @@ func main() {
 }*/
 
 func main() {
+
+	// Open the serial port
 	c := &serial.Config{Name: "COM3", Baud: 115200, ReadTimeout: 0}
 	s, err := serial.OpenPort(c)
 	if err != nil {
 		log.Fatal(err)
 	}
+	var wg sync.WaitGroup
+	// load the reader
+	scanner := bufio.NewScanner(s)
+	scanner.Buffer(make([]byte, 16), 1)
 
-	data := make([]byte, 1)
-	data[0] = 0x02
 	NodeId := make([]byte, 2)
 	NodeId[0] = 0x00
 	NodeId[1] = 0x00
-	fmt.Println("write")
-	request := newRequest(NodeId, CommandMifareRequest, []byte{0x26})
 
+	// tun on light blue
+	request := newRequest(NodeId, CommandMifareRead, []byte{0x02})
+	writerOfContent(s, request)
+
+	wg.Add(1)
+	go readerOfContent(scanner, &wg)
+	time.Sleep(3 * time.Second)
+	s.Flush()
+
+	s.Close()
+	wg.Wait()
+}
+
+func writerOfContent(s *serial.Port, request []byte) {
+	fmt.Println("===========================================")
 	fmt.Println("request:", request)
 	fmt.Println("requesthex:", hex.EncodeToString(request))
 	n, err := s.Write(request)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("request: ", request)
-	fmt.Println("n:", n)
-	scanner := bufio.NewScanner(s)
-	buf := make([]byte, 10)
-	fmt.Println("read")
-	var wg sync.WaitGroup
-
-	scanner.Buffer(buf, 1)
-	fmt.Println("1scan.bytes", scanner.Bytes())
-	fmt.Println("1scan.text", scanner.Text())
-	fmt.Println("1scan.err", scanner.Err())
-	fmt.Println("1scan.scan", scanner.Scan())
-	fmt.Println("2scan.bytes", scanner.Bytes())
-	fmt.Println("2scan.text", scanner.Text())
-	fmt.Println("2scan.err", scanner.Err())
-	fmt.Println("2scan.scan", scanner.Scan())
-	fmt.Println("3scan.bytes", scanner.Bytes())
-	fmt.Println("3scan.text", scanner.Text())
-	fmt.Println("3scan.err", scanner.Err())
-	fmt.Println("3scan.scan", scanner.Scan())
-	fmt.Println("4scan.bytes", scanner.Bytes())
-	fmt.Println("4scan.text", scanner.Text())
-	fmt.Println("4scan.err", scanner.Err())
-	fmt.Println("4scan.scan", scanner.Scan())
-	fmt.Println("5scan.bytes", scanner.Bytes())
-	fmt.Println("5scan.text", scanner.Text())
-	fmt.Println("5scan.err", scanner.Err())
-	fmt.Println("5scan.scan", scanner.Scan())
-	for scanner.Scan() {
-		fmt.Println("inside for")
-		data := scanner.Bytes()
-		wg.Add(1)
-		go func(data []byte) {
-			defer wg.Done()
-			fmt.Println("inside go func")
-			// figure out data packet type and
-			// send it into approprioate channel
-			fmt.Println("data: ", data)
-			fmt.Println("datahex: ", hex.EncodeToString(data))
-		}(data)
-	}
-	wg.Wait()
-	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("sleep")
-	time.Sleep(1 * time.Second)
-	fmt.Println("end sleep")
-	n, err = s.Read(buf)
-
-	fmt.Println("after read:")
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = s.Flush()
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("%q", buf[:n])
-	fmt.Println(string(buf))
+	fmt.Println("n: ", n)
+	fmt.Println("===========================================")
 }
 
-/*
-func main() {
-	//var cmd Command
-	d, err := OpenDevice("COM3")
-	if err != nil {
-		fmt.Printf("rfid: error reading response: %s", err)
-	}
-
-	data := make([]byte, 1)
-	data[0] = 0x03
-	NodeId := make([]byte, 2)
-	NodeId[0] = 0x00
-	NodeId[1] = 0x00
-	fmt.Println("write")
-	req := newRequest(NodeId, CommandInitializePort, data)
-	fmt.Println("TX:", req)
-	fmt.Println(hex.EncodeToString(req))
-	if _, err := d.port.Write(req); err != nil {
-		fmt.Printf("rfid: error sending command: %s", err)
-	}
-	fmt.Println("read")
-	resp, err := rx(d.port)
-	fmt.Println("post read")
-	if err != nil {
-		fmt.Printf("rfid: error reading response: %s", err)
-	}
-	fmt.Println("RX:", resp)
-
-}
-*/
-
-func readerOfContent(s *serial.Port, wg *sync.WaitGroup) {
-	scanner := bufio.NewScanner(s)
-	i := 0
-	for {
+func readerOfContent(scanner *bufio.Scanner, wg *sync.WaitGroup) {
+	i := 1
+	condition := true
+	for condition {
 		if scanner.Scan() {
+			fmt.Println("::::::::::::::::::::::::::::::::::::::::::")
 			data := scanner.Bytes()
-			fmt.Println(i, "datahex: ", hex.EncodeToString(data))
+			fmt.Println(i, "responsehex: ", hex.EncodeToString(data))
 			i++
+			condition = scanner.Scan()
+			fmt.Println("::::::::::::::::::::::::::::::::::::::::::")
 		}
 	}
-
 	wg.Done()
 }
