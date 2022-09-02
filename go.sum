@@ -1,0 +1,6 @@
+github.com/fln/rfid-app v0.0.0-20180805160743-10939039d507 h1:RKOZQhUUdrIcxl9A/318B2FOcHpk+R+IkGOn85XF42Q=
+github.com/fln/rfid-app v0.0.0-20180805160743-10939039d507/go.mod h1:FeNTwGBgcGs/sDZizTjRO5Ey4Vpjio1cSI3zPtp6kxg=
+github.com/tarm/serial v0.0.0-20180830185346-98f6abe2eb07 h1:UyzmZLoiDWMRywV4DUYb9Fbt8uiOSooupjTq10vpvnU=
+github.com/tarm/serial v0.0.0-20180830185346-98f6abe2eb07/go.mod h1:kDXzergiv9cbyO7IOYJZWg1U88JhDg3PB6klq9Hg2pA=
+golang.org/x/sys v0.0.0-20220808155132-1c4a2a72c664 h1:v1W7bwXHsnLLloWYTVEdvGvA7BHMeBYsPcF0GLDxIRs=
+golang.org/x/sys v0.0.0-20220808155132-1c4a2a72c664/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
